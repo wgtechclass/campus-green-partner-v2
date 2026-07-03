@@ -8,6 +8,7 @@
   const TEACHER_CODE_KEY = "greenPartner_teacherCode";
   const API_RETRY_LIMIT = 2;
   const API_RETRY_DELAY_MS = 900;
+  const API_TIMEOUT_MS = 12000;
 
   const app = document.querySelector("#app");
   const toast = document.querySelector("#toast");
@@ -35,6 +36,7 @@
 
   let teacherSessionCode = safeSessionStorageGet(TEACHER_CODE_KEY);
   let state = loadState();
+  if (API_URL) delete state.settings.teacherCode;
   let renderToken = 0;
 
   document.querySelector("#clearTeamButton").addEventListener("click", () => {
@@ -43,9 +45,11 @@
     render();
   });
 
+  app.innerHTML = renderLoading();
   window.addEventListener("hashchange", render);
   hydrateInitialData().then(render).catch((error) => {
-    app.innerHTML = renderError(error.message);
+    showToast(error.message || "資料同步較慢，先使用預設設定");
+    render();
   });
 
   function makeDefaultState() {
@@ -183,7 +187,7 @@
   }
 
   async function hydrateInitialData() {
-    const initialData = await api("getInitialData");
+    const initialData = await api("getInitialData", {}, { retryLimit: 0, timeoutMs: 9000 });
     state.settings = { ...state.settings, ...(initialData.settings || {}) };
     state.classes = initialData.classes?.length ? initialData.classes : state.classes;
     state.areas = initialData.areas?.length ? initialData.areas : state.areas;
@@ -193,18 +197,20 @@
     saveState();
   }
 
-  async function api(action, payload = {}) {
+  async function api(action, payload = {}, options = {}) {
     if (!API_URL) {
       return localApi(action, payload);
     }
 
+    const retryLimit = options.retryLimit ?? API_RETRY_LIMIT;
+    const timeoutMs = options.timeoutMs ?? API_TIMEOUT_MS;
     let lastError;
-    for (let attempt = 0; attempt <= API_RETRY_LIMIT; attempt += 1) {
+    for (let attempt = 0; attempt <= retryLimit; attempt += 1) {
       try {
-        return await remoteApi(action, payload);
+        return await remoteApi(action, payload, timeoutMs);
       } catch (error) {
         lastError = normalizeApiError(error);
-        if (!lastError.retryable || attempt === API_RETRY_LIMIT) break;
+        if (!lastError.retryable || attempt === retryLimit) break;
         await sleep(API_RETRY_DELAY_MS * (attempt + 1));
       }
     }
@@ -212,13 +218,23 @@
     throw new Error(lastError?.userMessage || "資料連線暫時不穩，請重新整理後再試");
   }
 
-  async function remoteApi(action, payload) {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action, payload })
-    });
-    const text = await response.text();
+  async function remoteApi(action, payload, timeoutMs) {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+    let response;
+    let text;
+
+    try {
+      response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action, payload }),
+        signal: controller.signal
+      });
+      text = await response.text();
+    } finally {
+      window.clearTimeout(timer);
+    }
 
     if (!response.ok) {
       throw makeApiError(`後端連線失敗（${response.status}），請稍後重新整理`, response.status >= 500 || response.status === 429);
@@ -248,6 +264,9 @@
 
   function normalizeApiError(error) {
     if (error?.userMessage) return error;
+    if (error?.name === "AbortError") {
+      return makeApiError("資料連線逾時，請重新整理後再試", true);
+    }
     if (error instanceof TypeError) {
       return makeApiError("資料連線暫時不穩，請重新整理後再試", true);
     }
@@ -1610,6 +1629,16 @@ ${rows || "目前尚無學生回報資料。"}`;
         <div class="empty-state">
           <h2>${escapeHtml(message)}</h2>
           ${canRetry ? `<button class="primary-button" type="button" onclick="location.reload()">重新整理</button>` : ""}
+        </div>
+      </section>
+    `;
+  }
+
+  function renderLoading() {
+    return `
+      <section class="page">
+        <div class="empty-state">
+          <h2>正在載入資料...</h2>
         </div>
       </section>
     `;
