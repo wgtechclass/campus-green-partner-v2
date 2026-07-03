@@ -103,16 +103,20 @@ function dispatch_(action, payload) {
     case "getTeamSubmissions":
       return getTeamSubmissions_(payload.teamId);
     case "getDashboardData":
+      requireTeacherCode_(payload);
       return getDashboardData_();
     case "getStats":
+      requireTeacherCode_(payload);
       return getStats_();
     case "createResultCard":
       return createResultCard_(payload);
     case "getAllResults":
+      requireTeacherCode_(payload);
       return getAllResults_();
     case "checkTeacherCode":
       return { ok: String(payload.code || "") === String(settingsObject_().teacherCode || "1234") };
     case "updateSettings":
+      requireTeacherCode_(payload);
       return updateSettings_(payload);
     default:
       throw new Error("action 不存在");
@@ -121,12 +125,24 @@ function dispatch_(action, payload) {
 
 function getInitialData_() {
   return {
-    settings: settingsObject_(),
+    settings: publicSettings_(),
     classes: activeRows_(readRows_("Classes")),
     areas: activeRows_(readRows_("Areas")),
     pets: activeRows_(readRows_("Pets")),
     missions: activeRows_(readRows_("Missions")).sort(function(a, b) { return Number(a.week) - Number(b.week); })
   };
+}
+
+function publicSettings_() {
+  var settings = settingsObject_();
+  delete settings.teacherCode;
+  return settings;
+}
+
+function requireTeacherCode_(payload) {
+  if (String((payload || {}).code || "") !== String(settingsObject_().teacherCode || "1234")) {
+    throw new Error("教師管理碼不正確或已失效，請重新登入教師端");
+  }
 }
 
 function createTeam_(payload) {
@@ -385,7 +401,7 @@ function getAllResults_() {
 function updateSettings_(payload) {
   var updates = {};
   if (payload.currentWeek) updates.currentWeek = text_(payload.currentWeek);
-  if (payload.teacherCode) updates.teacherCode = text_(payload.teacherCode);
+  if (payload.newTeacherCode) updates.teacherCode = text_(payload.newTeacherCode);
 
   Object.keys(updates).forEach(function(key) {
     var row = findRowByKey_("Settings", "key", key);

@@ -5,6 +5,7 @@
   const CLASS_KEY = "greenPartner_className";
   const GROUP_KEY = "greenPartner_groupNo";
   const TEAM_NAME_KEY = "greenPartner_teamName";
+  const TEACHER_CODE_KEY = "greenPartner_teacherCode";
 
   const app = document.querySelector("#app");
   const toast = document.querySelector("#toast");
@@ -30,6 +31,7 @@
     "其他"
   ];
 
+  let teacherSessionCode = safeSessionStorageGet(TEACHER_CODE_KEY);
   let state = loadState();
   let renderToken = 0;
 
@@ -170,7 +172,8 @@
         submissions: saved.submissions || [],
         scoresLog: saved.scoresLog || [],
         results: saved.results || [],
-        currentTeamId: saved.currentTeamId || safeStorageGet(TEAM_ID_KEY) || ""
+        currentTeamId: saved.currentTeamId || safeStorageGet(TEAM_ID_KEY) || "",
+        teacherUnlocked: Boolean(saved.teacherUnlocked && teacherSessionCode)
       };
     } catch {
       return base;
@@ -184,6 +187,7 @@
     state.areas = initialData.areas?.length ? initialData.areas : state.areas;
     state.pets = initialData.pets?.length ? initialData.pets : state.pets;
     state.missions = initialData.missions?.length ? initialData.missions : state.missions;
+    if (API_URL) delete state.settings.teacherCode;
     saveState();
   }
 
@@ -208,7 +212,7 @@
     switch (action) {
       case "getInitialData":
         return {
-          settings: state.settings,
+          settings: publicSettings(state.settings),
           classes: activeRows(state.classes),
           areas: activeRows(state.areas),
           pets: activeRows(state.pets),
@@ -225,21 +229,41 @@
       case "getTeamSubmissions":
         return getSubmissionsForTeam(payload.teamId);
       case "getDashboardData":
+        requireLocalTeacherCode(payload);
         return buildDashboardData();
       case "getStats":
+        requireLocalTeacherCode(payload);
         return buildStatsData();
       case "createResultCard":
         return createLocalResultCard(payload);
       case "getAllResults":
+        requireLocalTeacherCode(payload);
         return getAllResults();
       case "checkTeacherCode":
         return { ok: String(payload.code || "") === String(state.settings.teacherCode || "1234") };
       case "updateSettings":
-        state.settings = { ...state.settings, ...payload };
+        requireLocalTeacherCode(payload);
+        if (payload.currentWeek) state.settings.currentWeek = payload.currentWeek;
+        if (payload.newTeacherCode) state.settings.teacherCode = payload.newTeacherCode;
         saveState();
-        return { settings: state.settings };
+        return { settings: publicSettings(state.settings) };
       default:
         throw new Error("找不到這個操作");
+    }
+  }
+
+  function publicSettings(settings) {
+    const { teacherCode, ...visibleSettings } = settings || {};
+    return visibleSettings;
+  }
+
+  function teacherPayload(payload = {}) {
+    return { ...payload, code: teacherSessionCode };
+  }
+
+  function requireLocalTeacherCode(payload) {
+    if (String(payload.code || "") !== String(state.settings.teacherCode || "1234")) {
+      throw new Error("教師管理碼不正確或已失效，請重新登入教師端");
     }
   }
 
@@ -964,7 +988,7 @@
           </div>
           <div class="panel">
             <form id="teacherLoginForm">
-              ${inputField("code", "教師管理碼", "預設 1234", "", true, "password")}
+              ${inputField("code", "教師管理碼", "請輸入教師管理碼", "", true, "password")}
               <button class="primary-button" type="submit">進入教師端</button>
             </form>
           </div>
@@ -976,6 +1000,8 @@
           const code = new FormData(event.currentTarget).get("code");
           const data = await api("checkTeacherCode", { code });
           if (!data.ok) throw new Error("管理碼不正確");
+          teacherSessionCode = code;
+          safeSessionStorageSet(TEACHER_CODE_KEY, code);
           state.teacherUnlocked = true;
           saveState();
           showToast("已進入教師端");
@@ -986,7 +1012,7 @@
     }
 
     app.innerHTML = `<section class="page"><div class="empty-state">載入教師資料...</div></section>`;
-    const dashboard = await api("getDashboardData");
+    const dashboard = await api("getDashboardData", teacherPayload());
 
     app.innerHTML = `
       <section class="page">
@@ -1003,6 +1029,8 @@
     `;
 
     document.querySelector("#teacherLogoutButton").addEventListener("click", () => {
+      teacherSessionCode = "";
+      safeSessionStorageRemove(TEACHER_CODE_KEY);
       state.teacherUnlocked = false;
       saveState();
       showToast("已離開教師端");
@@ -1082,7 +1110,7 @@
   }
 
   async function renderTeacherStats() {
-    const stats = await api("getStats");
+    const stats = await api("getStats", teacherPayload());
     const prompt = buildAiPrompt(stats.submissions);
     document.querySelector("#teacherContent").innerHTML = `
       <div class="grid two">
@@ -1135,7 +1163,7 @@
         <form id="settingsForm">
           <div class="form-grid">
             ${selectField("currentWeek", "目前開放週次", ["1", "2", "3", "4"], String(state.settings.currentWeek || "1"), true)}
-            ${inputField("teacherCode", "教師管理碼", "1234", state.settings.teacherCode || "1234", true)}
+            ${inputField("newTeacherCode", "變更教師管理碼", "留空則不變", "", false, "password")}
           </div>
           <button class="primary-button" type="submit">儲存設定</button>
         </form>
@@ -1156,7 +1184,11 @@
       event.preventDefault();
       await withAction(async () => {
         const payload = Object.fromEntries(new FormData(event.currentTarget).entries());
-        const data = await api("updateSettings", payload);
+        const data = await api("updateSettings", teacherPayload(payload));
+        if (payload.newTeacherCode) {
+          teacherSessionCode = payload.newTeacherCode;
+          safeSessionStorageSet(TEACHER_CODE_KEY, payload.newTeacherCode);
+        }
         state.settings = { ...state.settings, ...data.settings };
         saveState();
         showToast("設定已儲存");
@@ -1476,7 +1508,11 @@ ${rows || "目前尚無學生回報資料。"}`;
 
   function saveState() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      const storedState = {
+        ...state,
+        settings: publicSettings(state.settings)
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(storedState));
     } catch {
       // localStorage may be unavailable in strict private browsing.
     }
@@ -1636,6 +1672,30 @@ ${rows || "目前尚無學生回報資料。"}`;
       localStorage.removeItem(key);
     } catch {
       // localStorage may be unavailable.
+    }
+  }
+
+  function safeSessionStorageGet(key) {
+    try {
+      return sessionStorage.getItem(key) || "";
+    } catch {
+      return "";
+    }
+  }
+
+  function safeSessionStorageSet(key, value) {
+    try {
+      sessionStorage.setItem(key, value);
+    } catch {
+      // sessionStorage may be unavailable.
+    }
+  }
+
+  function safeSessionStorageRemove(key) {
+    try {
+      sessionStorage.removeItem(key);
+    } catch {
+      // sessionStorage may be unavailable.
     }
   }
 })();
