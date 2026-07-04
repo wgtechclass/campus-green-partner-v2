@@ -201,7 +201,7 @@
         settings: { ...base.settings, ...(saved.settings || {}) },
         classes: saved.classes?.length ? saved.classes : base.classes,
         areas: saved.areas?.length ? saved.areas : base.areas,
-        pets: isV2SpiritSet(saved.pets) ? saved.pets : base.pets,
+        pets: normalizeSpirits(saved.pets),
         missions: isV2MissionSet(saved.missions) ? saved.missions : base.missions,
         mapNodes: saved.mapNodes?.length ? saved.mapNodes : base.mapNodes,
         teams: saved.teams || [],
@@ -222,7 +222,7 @@
     state.classes = initialData.classes?.length ? initialData.classes : state.classes;
     state.areas = initialData.areas?.length ? initialData.areas : state.areas;
     const incomingSpirits = initialData.spirits?.length ? initialData.spirits : initialData.pets;
-    state.pets = isV2SpiritSet(incomingSpirits) ? incomingSpirits : state.pets;
+    state.pets = isV2SpiritSet(incomingSpirits) ? normalizeSpirits(incomingSpirits) : normalizeSpirits(state.pets);
     state.missions = isV2MissionSet(initialData.missions) ? initialData.missions : state.missions;
     state.mapNodes = initialData.mapNodes?.length ? initialData.mapNodes : state.mapNodes;
     Object.assign(abilityLabels, initialData.energyLabels || {});
@@ -232,6 +232,19 @@
 
   function isV2SpiritSet(pets) {
     return Array.isArray(pets) && pets.some((pet) => String(pet.petId || "").startsWith("spirit_"));
+  }
+
+  function normalizeSpirits(pets) {
+    const incoming = isV2SpiritSet(pets) ? pets : [];
+    const incomingById = new Map(incoming.map((pet) => [pet.petId, pet]));
+    return defaultSpirits.map((defaultSpirit) => {
+      const existing = incomingById.get(defaultSpirit.petId) || {};
+      return {
+        ...existing,
+        ...defaultSpirit,
+        active: String(existing.active ?? defaultSpirit.active).toLowerCase() !== "false"
+      };
+    });
   }
 
   function isV2MissionSet(missions) {
