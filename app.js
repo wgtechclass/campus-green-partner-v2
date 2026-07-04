@@ -62,7 +62,7 @@
     { petId: "spirit_sun", petName: "陽光", description: "鼓勵大家走出教室，累積健康能量。", trait: "鼓勵走動、累積步數", spiritRole: "運動守衛", primaryEnergy: "stamina", secondaryEnergy: "influence", colorTheme: "yellow", icon: "光", imageStage1: spiritImageAssets.spirit_sun, active: true },
     { petId: "spirit_purple", petName: "紫寶", description: "像 AI 小隊長一樣，協助分析與提醒。", trait: "AI 分析、路線建議", spiritRole: "智慧守衛", primaryEnergy: "wisdom", secondaryEnergy: "", colorTheme: "purple", icon: "智", imageStage1: spiritImageAssets.spirit_purple, active: true },
     { petId: "spirit_heart", petName: "心心", description: "鼓勵團隊合作，讓小隊更有凝聚力。", trait: "鼓勵合作、團隊支持", spiritRole: "情緒守衛", primaryEnergy: "influence", secondaryEnergy: "", colorTheme: "pink", icon: "心", imageStage1: spiritImageAssets.spirit_heart, active: true },
-    { petId: "spirit_potato", petName: "土豆", description: "擅長垃圾分類與資源回收挑戰。", trait: "垃圾分類、資源回收", spiritRole: "回收守衛", primaryEnergy: "cleanse", secondaryEnergy: "wisdom", colorTheme: "brown", icon: "收", imageStage1: spiritImageAssets.spirit_potato, active: true }
+    { petId: "spirit_potato", petName: "阿栗", description: "擅長垃圾分類與資源回收挑戰。", trait: "垃圾分類、資源回收", spiritRole: "回收守衛", primaryEnergy: "cleanse", secondaryEnergy: "wisdom", colorTheme: "brown", icon: "栗", imageStage1: spiritImageAssets.spirit_potato, active: true }
   ];
   const defaultMapNodes = [
     { mapNodeId: "node_base", nodeName: "教室基地", areaName: "教室外", week: 1, routeName: "小隊基地集結", stepTarget: 0, description: "建立淨芽小隊，認識六位淨芽精靈。", unlockCondition: "建立小隊", icon: "基地", active: true },

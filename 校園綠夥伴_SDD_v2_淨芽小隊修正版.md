@@ -246,7 +246,7 @@ Google Sheets
 | 欄位 | 說明 | v2 說明 |
 |---|---|---|
 | petId | 角色 ID | 建議命名為 spiritId，但可沿用 petId |
-| petName | 角色名稱 | 綠芽、水滴、陽光、紫寶、心心、土豆 |
+| petName | 角色名稱 | 綠芽、水滴、陽光、紫寶、心心、阿栗 |
 | description | 角色描述 | 精靈個性與任務定位 |
 | trait | 角色特色 | 環境、活力、運動、智慧、情緒、回收 |
 | imageStage1 | 圖片 | 正式裁切去背角色圖片路徑 |
@@ -268,7 +268,7 @@ Google Sheets
 | spirit_sun | 陽光 | 運動守衛 | 鼓勵走動、累積步數 | stamina | yellow | ☀️ | assets/spirits/sun.png |
 | spirit_purple | 紫寶 | 智慧守衛 | AI 分析、路線建議 | wisdom | purple | 🔮 | assets/spirits/purple.png |
 | spirit_heart | 心心 | 情緒守衛 | 鼓勵合作、團隊支持 | influence | pink | 💗 | assets/spirits/heart.png |
-| spirit_potato | 土豆 | 回收守衛 | 垃圾分類、資源回收 | cleanse | brown | 🥔 | assets/spirits/potato.png |
+| spirit_potato | 阿栗 | 回收守衛 | 垃圾分類、資源回收 | cleanse | brown | 栗 | assets/spirits/potato.png |
 
 #### 角色圖片素材規格
 
@@ -281,7 +281,7 @@ Google Sheets
 | 陽光 | `assets/spirits/sun.png` |
 | 紫寶 | `assets/spirits/purple.png` |
 | 心心 | `assets/spirits/heart.png` |
-| 土豆 | `assets/spirits/potato.png` |
+| 阿栗 | `assets/spirits/potato.png` |
 
 素材輸出要求：
 
@@ -584,8 +584,8 @@ Google Sheets
 |---|---|---|
 | `stamina` | 健康能量 | 水滴、陽光 |
 | `scout` | 探索能量 | 綠芽 |
-| `cleanse` | 淨化能量 | 綠芽、土豆 |
-| `wisdom` | 智慧能量 | 紫寶、土豆 |
+| `cleanse` | 淨化能量 | 綠芽、阿栗 |
+| `wisdom` | 智慧能量 | 紫寶、阿栗 |
 | `influence` | 守護能量 | 心心 |
 
 ### 8.2 `calculateV2Score` 建議邏輯
@@ -835,7 +835,7 @@ const spirits = [
   },
   {
     id: 'spirit_potato',
-    name: '土豆',
+    name: '阿栗',
     role: '回收守衛',
     description: '擅長垃圾分類與資源回收挑戰。',
     primaryEnergy: 'cleanse',
