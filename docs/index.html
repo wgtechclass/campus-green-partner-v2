@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>校園綠夥伴：環境復甦任務</title>
+    <link rel="stylesheet" href="styles.css?v=20260704-v2-jinya-ready">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#/">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span>
+            <strong>校園綠夥伴</strong>
+            <small>環境復甦任務</small>
+          </span>
+        </a>
+        <nav class="top-nav" aria-label="主要頁面">
+          <a href="#/" data-nav="/">任務中心</a>
+          <a href="#/team" data-nav="/team">小隊</a>
+          <a href="#/map" data-nav="/map">地圖</a>
+          <a href="#/growth" data-nav="/growth">基地</a>
+          <a href="#/result" data-nav="/result">守護報告</a>
+          <a href="#/teacher" data-nav="/teacher">教師端</a>
+        </nav>
+        <button class="ghost-button" id="clearTeamButton" type="button">清除小隊</button>
+      </header>
+
+      <div class="workspace">
+        <aside class="side-panel" aria-label="任務週次">
+          <div class="side-title">四週任務</div>
+          <a href="#/mission/1" data-week-link="1">
+            <span>第 1 週</span>
+            <strong>小隊集結</strong>
+          </a>
+          <a href="#/mission/2" data-week-link="2">
+            <span>第 2 週</span>
+            <strong>健康探索</strong>
+          </a>
+          <a href="#/mission/3" data-week-link="3">
+            <span>第 3 週</span>
+            <strong>分類挑戰</strong>
+          </a>
+          <a href="#/mission/4" data-week-link="4">
+            <span>第 4 週</span>
+            <strong>守護發表</strong>
+          </a>
+        </aside>
+
+        <main id="app" class="main-panel" tabindex="-1"></main>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" aria-live="polite"></div>
+
+    <script>
+      window.GREEN_PARTNER_API_URL = "https://script.google.com/macros/s/AKfycbxbmc8_hheFwEO2Z-0Z-kTl9eLtkXRIpgdBVDd1aX1908xNyuc8jvYWL7QkMJpBqgcT/exec";
+    </script>
+    <script src="app.js?v=20260704-v2-jinya-ready"></script>
+  </body>
+</html>

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 180" role="img" aria-label="Jinya mission loop">
+  <rect width="960" height="180" rx="24" fill="#f7fbf2"/>
+  <path d="M74 92h812" fill="none" stroke="#cfe2cf" stroke-width="10" stroke-linecap="round"/>
+  <g fill="none" stroke="#2f7c52" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M166 92l24-24 24 24-24 24z" fill="#e5f5df"/>
+    <path d="M295 103c-18-6-25-21-19-38 24 4 35 18 35 38"/>
+    <path d="M408 113c-24-4-39-19-39-41 23 2 41 18 43 41"/>
+    <path d="M529 68l18 64h-42l18-64z"/>
+    <path d="M637 72h55v72h-55z"/>
+    <path d="M762 68c22 0 40 18 40 40s-18 40-40 40-40-18-40-40 18-40 40-40z"/>
+  </g>
+  <g>
+    <circle cx="70" cy="92" r="40" fill="#fff" stroke="#8fcf92" stroke-width="6"/>
+    <path d="M51 94h38M51 80h38M51 108h25" stroke="#2f7c52" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <g>
+    <circle cx="190" cy="92" r="40" fill="#fff" stroke="#8fcf92" stroke-width="6"/>
+    <path d="M176 123l12-36 22 16M198 123l18-31M186 65l15 14 16-16" fill="none" stroke="#2f7c52" stroke-width="7" stroke-linecap="round"/>
+  </g>
+  <g>
+    <circle cx="310" cy="92" r="40" fill="#fff" stroke="#8fcf92" stroke-width="6"/>
+    <path d="M292 112c18-8 26-23 21-45 23 14 31 39 15 58" fill="#ffe27a" stroke="#bc7b3a" stroke-width="6"/>
+    <circle cx="304" cy="91" r="6" fill="#bc7b3a"/>
+  </g>
+  <g>
+    <circle cx="430" cy="92" r="40" fill="#fff" stroke="#8fcf92" stroke-width="6"/>
+    <path d="M410 72h40l-6 48h-28z" fill="#dfe9e3" stroke="#2f7c52" stroke-width="6"/>
+    <path d="M405 72h50" stroke="#2f7c52" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <g>
+    <circle cx="550" cy="92" r="40" fill="#fff" stroke="#8fcf92" stroke-width="6"/>
+    <rect x="526" y="72" width="48" height="42" rx="8" fill="#dff4ff" stroke="#2f7ca8" stroke-width="6"/>
+    <circle cx="540" cy="93" r="6" fill="#2f7ca8"/>
+    <path d="M536 126h28" stroke="#2f7ca8" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <g>
+    <circle cx="670" cy="92" r="40" fill="#fff" stroke="#8fcf92" stroke-width="6"/>
+    <path d="M647 92h46M670 69v46M651 70c25 12 37 29 37 51" fill="none" stroke="#2f7c52" stroke-width="7" stroke-linecap="round"/>
+  </g>
+  <g>
+    <circle cx="790" cy="92" r="40" fill="#fff" stroke="#8fcf92" stroke-width="6"/>
+    <path d="M790 58c16 19 30 38 30 58-16 6-43 6-60 0 0-20 14-39 30-58z" fill="#dff7b7" stroke="#2f7c52" stroke-width="6"/>
+    <circle cx="778" cy="95" r="5" fill="#2f7c52"/>
+    <circle cx="802" cy="95" r="5" fill="#2f7c52"/>
+  </g>
+  <g>
+    <circle cx="910" cy="92" r="40" fill="#fff" stroke="#8fcf92" stroke-width="6"/>
+    <path d="M885 116l17-48 22 24 22-24 15 48z" fill="#e1f0ff" stroke="#2f7ca8" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M903 115l18-25 18 25" fill="none" stroke="#2f7ca8" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <g fill="#2f7c52">
+    <path d="M123 92l-15-10v20z"/>
+    <path d="M243 92l-15-10v20z"/>
+    <path d="M363 92l-15-10v20z"/>
+    <path d="M483 92l-15-10v20z"/>
+    <path d="M603 92l-15-10v20z"/>
+    <path d="M723 92l-15-10v20z"/>
+    <path d="M843 92l-15-10v20z"/>
+  </g>
+</svg>
