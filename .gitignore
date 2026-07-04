@@ -2,3 +2,6 @@ config.local.js
 .agents/
 .DS_Store
 Thumbs.db
+/角色.png
+/遊戲循環.png
+/local-preview.html

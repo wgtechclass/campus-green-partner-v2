@@ -14,15 +14,38 @@
   const toast = document.querySelector("#toast");
   const abilityOrder = ["stamina", "scout", "cleanse", "wisdom", "influence"];
   const abilityLabels = {
-    stamina: "體力值",
-    scout: "偵查值",
-    cleanse: "淨化值",
-    wisdom: "智慧值",
-    influence: "影響力"
+    stamina: "健康能量",
+    scout: "探索能量",
+    cleanse: "淨化能量",
+    wisdom: "智慧能量",
+    influence: "守護能量"
   };
-  const stageRank = ["種子期", "幼體期", "成長期", "守護期"];
+  const gameDisplayName = "淨芽小隊：校園健康冒險";
+  const formalProjectName = "校園綠夥伴：環境復甦任務";
+  const stageRank = ["萌芽級", "成長級", "茁壯級", "守護級"];
+  const teamLevels = [
+    { level: 1, name: "萌芽級", condition: "建立淨芽小隊" },
+    { level: 2, name: "成長級", condition: "完成校園健康探索" },
+    { level: 3, name: "茁壯級", condition: "完成垃圾辨識與分類" },
+    { level: 4, name: "守護級", condition: "完成守護報告" }
+  ];
   const groupOptions = Array.from({ length: 8 }, (_, index) => `第${index + 1}組`);
   const amountOptions = ["少量", "中等", "很多"];
+  const classificationOptions = ["一般垃圾", "資源回收", "廚餘", "有害垃圾", "不確定，需要查詢"];
+  const spiritImageAssets = {
+    spirit_green: "assets/spirits/green.png",
+    spirit_water: "assets/spirits/water.png",
+    spirit_sun: "assets/spirits/sun.png",
+    spirit_purple: "assets/spirits/purple.png",
+    spirit_heart: "assets/spirits/heart.png",
+    spirit_potato: "assets/spirits/potato.png"
+  };
+  const uiAssets = {
+    aiCaptain: "assets/ui/ai-captain.png",
+    campusBase: "assets/ui/campus-base.png",
+    campusMap: "assets/ui/campus-map.svg",
+    missionLoop: "assets/ui/mission-loop.svg"
+  };
   const trashOptions = [
     "紙類",
     "塑膠袋",
@@ -32,6 +55,21 @@
     "鉛筆屑或橡皮擦屑",
     "寶特瓶",
     "其他"
+  ];
+  const defaultSpirits = [
+    { petId: "spirit_green", petName: "綠芽", description: "擅長發現垃圾與守護校園環境。", trait: "發現垃圾、綠化校園", spiritRole: "環境守衛", primaryEnergy: "scout", secondaryEnergy: "cleanse", colorTheme: "green", icon: "芽", imageStage1: spiritImageAssets.spirit_green, active: true },
+    { petId: "spirit_water", petName: "水滴", description: "提醒大家補充水分，保持探索活力。", trait: "補充能量、健康提醒", spiritRole: "活力守衛", primaryEnergy: "stamina", secondaryEnergy: "", colorTheme: "blue", icon: "水", imageStage1: spiritImageAssets.spirit_water, active: true },
+    { petId: "spirit_sun", petName: "陽光", description: "鼓勵大家走出教室，累積健康能量。", trait: "鼓勵走動、累積步數", spiritRole: "運動守衛", primaryEnergy: "stamina", secondaryEnergy: "influence", colorTheme: "yellow", icon: "光", imageStage1: spiritImageAssets.spirit_sun, active: true },
+    { petId: "spirit_purple", petName: "紫寶", description: "像 AI 小隊長一樣，協助分析與提醒。", trait: "AI 分析、路線建議", spiritRole: "智慧守衛", primaryEnergy: "wisdom", secondaryEnergy: "", colorTheme: "purple", icon: "智", imageStage1: spiritImageAssets.spirit_purple, active: true },
+    { petId: "spirit_heart", petName: "心心", description: "鼓勵團隊合作，讓小隊更有凝聚力。", trait: "鼓勵合作、團隊支持", spiritRole: "情緒守衛", primaryEnergy: "influence", secondaryEnergy: "", colorTheme: "pink", icon: "心", imageStage1: spiritImageAssets.spirit_heart, active: true },
+    { petId: "spirit_potato", petName: "土豆", description: "擅長垃圾分類與資源回收挑戰。", trait: "垃圾分類、資源回收", spiritRole: "回收守衛", primaryEnergy: "cleanse", secondaryEnergy: "wisdom", colorTheme: "brown", icon: "收", imageStage1: spiritImageAssets.spirit_potato, active: true }
+  ];
+  const defaultMapNodes = [
+    { mapNodeId: "node_base", nodeName: "教室基地", areaName: "教室外", week: 1, routeName: "小隊基地集結", stepTarget: 0, description: "建立淨芽小隊，認識六位淨芽精靈。", unlockCondition: "建立小隊", icon: "基地", active: true },
+    { mapNodeId: "node_playground", nodeName: "操場探索區", areaName: "操場", week: 2, routeName: "操場東側探索路線", stepTarget: 800, description: "走出教室，累積步數並觀察操場周邊。", unlockCondition: "完成第 1 週任務", icon: "步", active: true },
+    { mapNodeId: "node_corridor", nodeName: "走廊川堂偵查區", areaName: "走廊", week: 2, routeName: "走廊與川堂偵查路線", stepTarget: 800, description: "找出人流較多處的垃圾或髒亂能量。", unlockCondition: "完成第 2 週探索", icon: "查", active: true },
+    { mapNodeId: "node_classify", nodeName: "分類挑戰區", areaName: "飲水機旁", week: 3, routeName: "分類挑戰路線", stepTarget: 600, description: "辨識垃圾並判斷分類方式。", unlockCondition: "完成垃圾辨識紀錄", icon: "分", active: true },
+    { mapNodeId: "node_guardian", nodeName: "守護發表區", areaName: "川堂", week: 4, routeName: "守護報告路線", stepTarget: 400, description: "整理發現、提出提案，完成守護報告。", unlockCondition: "完成第 3 週分析", icon: "守", active: true }
   ];
 
   let teacherSessionCode = safeSessionStorageGet(TEACHER_CODE_KEY);
@@ -57,7 +95,13 @@
       settings: {
         teacherCode: "1234",
         currentWeek: "1",
-        gameTitle: "校園綠夥伴：環境復甦任務"
+        gameTitle: formalProjectName,
+        formalProjectName,
+        gameDisplayName,
+        defaultStepTarget: "800",
+        aiCaptainName: "紫寶隊長",
+        enableManualSteps: "true",
+        enableClassificationChallenge: "true"
       },
       classes: [
         { classId: "C501", className: "五年一班", grade: "五年級", active: true },
@@ -78,81 +122,66 @@
         { areaId: "A10", areaName: "校門口", description: "上下學出入口", active: true },
         { areaId: "A11", areaName: "其他", description: "其他觀察地點", active: true }
       ],
-      pets: [
-        {
-          petId: "pet_leaf_001",
-          petName: "小葉靈",
-          description: "溫和、愛觀察",
-          trait: "偵查值較高",
-          active: true
-        },
-        {
-          petId: "pet_step_001",
-          petName: "步步獸",
-          description: "活潑、愛探索",
-          trait: "體力值較高",
-          active: true
-        },
-        {
-          petId: "pet_clean_001",
-          petName: "淨淨鳥",
-          description: "喜歡乾淨",
-          trait: "淨化值較高",
-          active: true
-        },
-        {
-          petId: "pet_light_001",
-          petName: "亮光鹿",
-          description: "會發現問題",
-          trait: "智慧值較高",
-          active: true
-        },
-        {
-          petId: "pet_bud_001",
-          petName: "花芽龍",
-          description: "成長速度快",
-          trait: "影響力較高",
-          active: true
-        }
-      ],
+      pets: defaultSpirits.map((spirit) => ({ ...spirit })),
       missions: [
         {
           missionId: "M1",
           week: 1,
-          title: "綠夥伴甦醒",
-          story: "建立小隊，讓綠夥伴知道誰要一起守護校園。",
-          instruction: "選定小隊與綠夥伴後，先預測可能的校園髒亂能量點。",
+          title: "淨芽小隊集結",
+          story: "建立淨芽小隊，選出隊長精靈，啟動校園健康冒險。",
+          instruction: "認識六位淨芽精靈，完成小隊基地集結。",
+          mapNodeId: "node_base",
+          routeName: "小隊基地集結",
+          stepTarget: 0,
+          taskType: "team",
+          aiCaptainHint: "先確認小隊名稱與隊長精靈，之後每次探索都要互相提醒安全。",
           unlockCondition: "建立小隊",
           active: true
         },
         {
           missionId: "M2",
           week: 2,
-          title: "校園偵查任務",
-          story: "走進校園，找出環境問題最明顯的地方。",
-          instruction: "到校園指定區域觀察，記錄垃圾類型、數量感受與可能原因。",
+          title: "校園健康探索",
+          story: "走出教室，累積步數與探索能量，找出校園環境問題。",
+          instruction: "完成指定路線探索，記錄步數、地點與發現。",
+          mapNodeId: "node_playground",
+          routeName: "操場東側探索路線",
+          stepTarget: 800,
+          taskType: "explore",
+          aiCaptainHint: "走路時請注意安全，也記得觀察垃圾容易出現的位置。",
           unlockCondition: "完成第 1 週任務",
           active: true
         },
         {
           missionId: "M3",
           week: 3,
-          title: "熱點分析任務",
-          story: "把觀察變成判斷，找出問題背後的原因。",
-          instruction: "選定一個熱點，分析常見垃圾與形成原因，提出具體改善想法。",
+          title: "垃圾辨識與分類挑戰",
+          story: "把觀察變成判斷，完成垃圾辨識、分類與原因分析。",
+          instruction: "選定一個熱點，完成分類結果、分類理由與改善想法。",
+          mapNodeId: "node_classify",
+          routeName: "分類挑戰路線",
+          stepTarget: 600,
+          taskType: "classify",
+          aiCaptainHint: "分類前先觀察材質與髒污狀態，不確定時可以先寫下理由。",
           unlockCondition: "完成至少一筆偵查回報",
           active: true
         },
         {
           missionId: "M4",
           week: 4,
-          title: "校園守護任務",
-          story: "把小隊發現整理成可以讓更多人看見的行動。",
-          instruction: "完成宣導口號、行動承諾與成果卡，讓綠夥伴進入守護期。",
+          title: "校園守護發表",
+          story: "整理四週探索成果，完成淨芽小隊守護報告。",
+          instruction: "完成宣導口號、行動承諾與守護報告，讓小隊成為守護級。",
+          mapNodeId: "node_guardian",
+          routeName: "守護報告路線",
+          stepTarget: 400,
+          taskType: "advocate",
+          aiCaptainHint: "改善提案要具體可行，讓其他同學知道可以怎麼一起做到。",
           unlockCondition: "完成熱點分析",
           active: true
         }
       ],
+      mapNodes: defaultMapNodes.map((node) => ({ ...node })),
       teams: [],
       submissions: [],
       scoresLog: [],
@@ -172,8 +201,9 @@
         settings: { ...base.settings, ...(saved.settings || {}) },
         classes: saved.classes?.length ? saved.classes : base.classes,
         areas: saved.areas?.length ? saved.areas : base.areas,
-        pets: saved.pets?.length ? saved.pets : base.pets,
-        missions: saved.missions?.length ? saved.missions : base.missions,
+        pets: isV2SpiritSet(saved.pets) ? saved.pets : base.pets,
+        missions: isV2MissionSet(saved.missions) ? saved.missions : base.missions,
+        mapNodes: saved.mapNodes?.length ? saved.mapNodes : base.mapNodes,
         teams: saved.teams || [],
         submissions: saved.submissions || [],
         scoresLog: saved.scoresLog || [],
@@ -191,10 +221,21 @@
     state.settings = { ...state.settings, ...(initialData.settings || {}) };
     state.classes = initialData.classes?.length ? initialData.classes : state.classes;
     state.areas = initialData.areas?.length ? initialData.areas : state.areas;
-    state.pets = initialData.pets?.length ? initialData.pets : state.pets;
-    state.missions = initialData.missions?.length ? initialData.missions : state.missions;
+    const incomingSpirits = initialData.spirits?.length ? initialData.spirits : initialData.pets;
+    state.pets = isV2SpiritSet(incomingSpirits) ? incomingSpirits : state.pets;
+    state.missions = isV2MissionSet(initialData.missions) ? initialData.missions : state.missions;
+    state.mapNodes = initialData.mapNodes?.length ? initialData.mapNodes : state.mapNodes;
+    Object.assign(abilityLabels, initialData.energyLabels || {});
     if (API_URL) delete state.settings.teacherCode;
     saveState();
+  }
+
+  function isV2SpiritSet(pets) {
+    return Array.isArray(pets) && pets.some((pet) => String(pet.petId || "").startsWith("spirit_"));
+  }
+
+  function isV2MissionSet(missions) {
+    return Array.isArray(missions) && missions.some((mission) => mission.mapNodeId || mission.stepTarget || mission.aiCaptainHint);
   }
 
   async function api(action, payload = {}, options = {}) {
@@ -292,8 +333,13 @@
           classes: activeRows(state.classes),
           areas: activeRows(state.areas),
           pets: activeRows(state.pets),
-          missions: activeRows(state.missions)
+          spirits: activeRows(state.pets),
+          missions: activeRows(state.missions),
+          mapNodes: activeRows(state.mapNodes || []),
+          energyLabels: abilityLabels
         };
+      case "getMapNodes":
+        return { mapNodes: activeRows(state.mapNodes || []) };
       case "createTeam":
         return createLocalTeam(payload);
       case "getTeam":
@@ -347,14 +393,14 @@
     const className = text(payload.className);
     const groupNo = text(payload.groupNo);
     const teamName = text(payload.teamName);
-    const selectedPetId = text(payload.selectedPetId);
+    const selectedPetId = text(payload.leaderSpiritId || payload.selectedPetId);
     const customPetName = text(payload.customPetName);
 
     if (!className) throw new Error("請選擇班級");
     if (!groupNo) throw new Error("請選擇組別");
     if (!teamName) throw new Error("請輸入小隊名稱");
-    if (!selectedPetId) throw new Error("請選擇一位綠夥伴");
-    if (!customPetName) throw new Error("請輸入綠夥伴名稱");
+    if (!selectedPetId) throw new Error("請選擇一位隊長精靈");
+    if (!customPetName) throw new Error("請輸入隊長精靈名稱");
 
     const duplicate = state.teams.find((team) => (
       team.className === className && team.groupNo === groupNo
@@ -371,14 +417,22 @@
       groupNo,
       teamName,
       selectedPetId,
+      leaderSpiritId: selectedPetId,
       customPetName,
-      stage: "種子期",
+      unlockedSpirits: defaultSpirits.map((spirit) => spirit.petId),
+      stage: "萌芽級",
+      teamLevel: 1,
+      teamLevelName: "萌芽級",
+      mapProgress: 20,
+      totalSteps: 0,
+      completedMapNodes: ["node_base"],
+      lastAiCaptainFeedback: "紫寶隊長提醒：先建立默契，下一次探索時一起注意安全與環境。",
       stamina: 5,
       scout: 0,
       cleanse: 0,
       wisdom: 0,
       influence: 5,
-      badges: ["甦醒徽章"],
+      badges: ["淨芽集結徽章"],
       lastUpdated: now
     };
 
@@ -394,7 +448,11 @@
       cleanseDelta: 0,
       wisdomDelta: 0,
       influenceDelta: 5,
-      note: "建立小隊與命名綠夥伴"
+      note: "建立淨芽小隊與命名隊長精靈",
+      stepDelta: 0,
+      mapProgressDelta: 20,
+      spiritEnergyType: "influence",
+      unlockEvent: "淨芽集結徽章"
     });
     saveState();
     return { team: decorateTeam(team) };
@@ -425,14 +483,9 @@
     const week = Number(payload.week);
     const mission = state.missions.find((item) => Number(item.week) === week);
     if (!mission) throw new Error("找不到任務資料");
-    if (!text(payload.areaName)) throw new Error("請選擇調查地點");
-    if (!text(payload.problemFound)) throw new Error("請填寫發現問題");
-    if (!Array.isArray(payload.trashTypes) || payload.trashTypes.length === 0) {
-      throw new Error("請選擇垃圾類型");
-    }
-    if (!text(payload.amountLevel)) throw new Error("請選擇數量感受");
-    if (!text(payload.possibleReason)) throw new Error("請填寫可能原因");
-    if (!text(payload.improvementIdea)) throw new Error("請填寫改善想法");
+    const taskType = missionTaskType(mission);
+    validateMissionPayload(payload, mission);
+    const trashTypes = Array.isArray(payload.trashTypes) ? payload.trashTypes : ensureArray(payload.trashTypes);
 
     const now = new Date().toISOString();
     const submission = {
@@ -443,12 +496,24 @@
       groupNo: team.groupNo,
       week,
       missionId: payload.missionId || mission.missionId,
-      areaName: text(payload.areaName),
-      problemFound: text(payload.problemFound),
-      trashTypes: payload.trashTypes.map(text).filter(Boolean),
-      amountLevel: text(payload.amountLevel),
-      possibleReason: text(payload.possibleReason),
-      improvementIdea: text(payload.improvementIdea),
+      missionCardId: text(payload.missionCardId || mission.missionId),
+      areaName: text(payload.areaName) || missionAreaName(mission),
+      mapNodeId: text(payload.mapNodeId || mission.mapNodeId),
+      routeName: text(payload.routeName || mission.routeName),
+      stepCount: numberValue(payload.stepCount),
+      stepTarget: stepTargetValue(payload.stepTarget, mission.stepTarget, state.settings.defaultStepTarget, 800),
+      problemFound: text(payload.problemFound) || defaultProblemForMission(taskType),
+      trashTypes: trashTypes.map(text).filter(Boolean),
+      identifiedItem: text(payload.identifiedItem),
+      classificationResult: text(payload.classificationResult || payload.classificationType),
+      classificationReason: text(payload.classificationReason),
+      aiGuessNote: text(payload.aiGuessNote),
+      aiCaptainHintUsed: text(payload.aiCaptainHintUsed || mission.aiCaptainHint),
+      miniChallengeScore: text(payload.classificationResult || payload.classificationType) ? 1 : 0,
+      routeCompleted: Boolean(text(payload.routeName || mission.routeName) || numberValue(payload.stepCount) > 0),
+      amountLevel: text(payload.amountLevel) || "少量",
+      possibleReason: text(payload.possibleReason) || defaultReasonForMission(taskType),
+      improvementIdea: text(payload.improvementIdea) || defaultImprovementForMission(taskType),
       photoNote: text(payload.photoNote),
       photoUrl: text(payload.photoUrl),
       reflection: text(payload.reflection),
@@ -457,6 +522,8 @@
 
     const delta = calculateSubmissionDelta(submission);
     state.submissions.push(submission);
+    team.totalSteps = Number(team.totalSteps || 0) + Number(submission.stepCount || 0);
+    team.lastAiCaptainFeedback = buildAICaptainFeedback(team, submission);
     applyDelta(team, delta);
     state.scoresLog.push({
       logId: makeId("L"),
@@ -469,11 +536,61 @@
       cleanseDelta: delta.cleanse,
       wisdomDelta: delta.wisdom,
       influenceDelta: delta.influence,
-      note: `第 ${week} 週任務回報`
+      note: `第 ${week} 週任務回報`,
+      stepDelta: submission.stepCount,
+      mapProgressDelta: 0,
+      spiritEnergyType: mainDeltaKey(delta),
+      unlockEvent: ""
     });
     refreshTeamProgress(team.teamId);
     saveState();
     return { submission, team: decorateTeam(team), delta };
+  }
+
+  function validateMissionPayload(payload, mission) {
+    const taskType = missionTaskType(mission);
+    if (taskType === "team") return;
+
+    if (!text(payload.areaName)) throw new Error("請選擇調查地點");
+    if (!text(payload.problemFound)) throw new Error(taskType === "advocate" ? "請填寫主要行動或發現" : "請填寫發現問題");
+    if (!text(payload.amountLevel)) throw new Error("請選擇數量感受");
+    if (!text(payload.possibleReason)) throw new Error("請填寫可能原因");
+    if (!text(payload.improvementIdea)) throw new Error(taskType === "advocate" ? "請填寫宣導或改善行動" : "請填寫改善想法");
+
+    if (taskType === "classify") {
+      if (!text(payload.identifiedItem)) throw new Error("請填寫辨識物品");
+      if (!text(payload.classificationResult || payload.classificationType)) throw new Error("請選擇垃圾分類結果");
+      if (!text(payload.classificationReason)) throw new Error("請填寫分類理由");
+    }
+  }
+
+  function missionTaskType(mission) {
+    if (mission?.taskType) return String(mission.taskType);
+    const week = Number(mission?.week || 0);
+    if (week === 1) return "team";
+    if (week === 3) return "classify";
+    if (week === 4) return "advocate";
+    return "explore";
+  }
+
+  function missionAreaName(mission) {
+    return mapNodeForMission(mission)?.areaName || "校園";
+  }
+
+  function defaultProblemForMission(taskType) {
+    if (taskType === "team") return "完成淨芽小隊集結";
+    if (taskType === "advocate") return "整理小隊守護行動與發表重點";
+    return "";
+  }
+
+  function defaultReasonForMission(taskType) {
+    if (taskType === "team") return "小隊已完成角色分工與任務約定";
+    return "";
+  }
+
+  function defaultImprovementForMission(taskType) {
+    if (taskType === "team") return "一起遵守安全提醒，開始校園健康冒險";
+    return "";
   }
 
   function createLocalResultCard(payload) {
@@ -492,13 +609,20 @@
       resultId: existing?.resultId || makeId("R"),
       createdAt: existing?.createdAt || now,
       teamId: team.teamId,
+      reportTitle: `${team.teamName} 淨芽小隊守護報告`,
       mainArea: text(payload.mainArea),
       mainFinding: text(payload.mainFinding),
       mainReason: text(payload.mainReason),
       proposal: text(payload.proposal),
       slogan: text(payload.slogan),
       commitment: text(payload.commitment),
-      finalStage: "守護期",
+      finalStage: "守護級",
+      totalSteps: Number(team.totalSteps || 0),
+      unlockedSpirits: ensureArray(team.unlockedSpirits).length ? ensureArray(team.unlockedSpirits).join("、") : defaultSpirits.map((spirit) => spirit.petName).join("、"),
+      exploredAreas: unique(getSubmissionsForTeam(team.teamId).map((item) => item.areaName).filter(Boolean)).join("、"),
+      classificationSummary: buildClassificationSummary(getSubmissionsForTeam(team.teamId)),
+      mapProgress: Number(team.mapProgress || 0),
+      aiCaptainSummary: text(payload.aiCaptainSummary) || buildAICaptainReportSummary(team, payload),
       summaryText: buildResultSummary(team, payload)
     };
 
@@ -519,7 +643,11 @@
         cleanseDelta: delta.cleanse,
         wisdomDelta: delta.wisdom,
         influenceDelta: delta.influence,
-        note: "完成成果卡"
+        note: "完成淨芽小隊守護報告",
+        stepDelta: 0,
+        mapProgressDelta: 100 - Number(team.mapProgress || 0),
+        spiritEnergyType: "influence",
+        unlockEvent: "守護級"
       });
     }
 
@@ -529,11 +657,15 @@
   }
 
   function calculateSubmissionDelta(submission) {
+    if (Number(submission.week) === 1) {
+      return { stamina: 0, scout: 0, cleanse: 0, wisdom: 0, influence: 5 };
+    }
+    const stepBonus = Math.min(10, Math.floor(Number(submission.stepCount || 0) / 200));
     return {
-      stamina: submission.areaName ? 5 : 0,
-      scout: submission.problemFound ? 10 : 0,
-      cleanse: submission.improvementIdea ? 10 : 0,
-      wisdom: (submission.trashTypes.length ? 5 : 0) + (submission.possibleReason ? 10 : 0),
+      stamina: (submission.areaName ? 5 : 0) + stepBonus,
+      scout: (submission.routeName ? 5 : 0) + (submission.problemFound ? 10 : 0) + (submission.photoNote || submission.photoUrl ? 5 : 0),
+      cleanse: (submission.classificationResult ? 5 : 0) + (submission.improvementIdea ? 10 : 0),
+      wisdom: (submission.trashTypes.length ? 5 : 0) + (submission.identifiedItem ? 5 : 0) + (submission.classificationReason ? 5 : 0) + (submission.possibleReason ? 10 : 0),
       influence: submission.reflection ? 5 : 0
     };
   }
@@ -561,27 +693,53 @@
     const submissions = getSubmissionsForTeam(teamId);
     const result = state.results.find((item) => item.teamId === teamId);
     const badges = new Set(parseBadges(team.badges));
-    badges.add("甦醒徽章");
+    badges.add("淨芽集結徽章");
 
-    let stage = "種子期";
+    let level = 1;
+    let stage = "萌芽級";
+    const completedNodes = new Set(ensureArray(team.completedMapNodes));
+    completedNodes.add("node_base");
     if (submissions.some((item) => Number(item.week) === 2)) {
-      stage = "幼體期";
-      badges.add("校園偵查徽章");
+      level = Math.max(level, 2);
+      stage = "成長級";
+      completedNodes.add("node_playground");
+      badges.add("校園探索徽章");
+      badges.add("出發徽章");
     }
     if (submissions.some((item) => Number(item.week) === 3)) {
-      stage = "成長期";
+      level = Math.max(level, 3);
+      stage = "茁壯級";
+      completedNodes.add("node_classify");
       badges.add("熱點分析徽章");
     }
+    submissions.forEach((submission) => {
+      if (submission.mapNodeId) completedNodes.add(submission.mapNodeId);
+      const target = stepTargetValue(submission.stepTarget, state.settings.defaultStepTarget, 800);
+      if (target > 0 && Number(submission.stepCount || 0) >= target) {
+        badges.add("步行能量徽章");
+      }
+      if (submission.identifiedItem || submission.aiGuessNote) badges.add("垃圾辨識徽章");
+      if (submission.classificationResult && submission.classificationReason) badges.add("分類達人徽章");
+      if (submission.reflection) badges.add("團隊合作徽章");
+      if (submission.aiCaptainHintUsed) badges.add("AI 智慧徽章");
+    });
     if (submissions.some((item) => text(item.improvementIdea))) {
-      badges.add("改善提案徽章");
+      badges.add("淨化提案徽章");
     }
     if (result) {
-      stage = "守護期";
+      level = 4;
+      stage = "守護級";
+      completedNodes.add("node_guardian");
       badges.add("校園守護徽章");
-      if (text(result.slogan)) badges.add("影響力徽章");
+      if (text(result.slogan)) badges.add("守護倡議徽章");
     }
+    if (completedNodes.size >= 2) badges.add("地圖開拓徽章");
 
     team.stage = stage;
+    team.teamLevel = level;
+    team.teamLevelName = stage;
+    team.completedMapNodes = Array.from(completedNodes);
+    team.mapProgress = Math.min(100, Math.round((completedNodes.size / Math.max(1, activeRows(state.mapNodes || []).length)) * 100));
     team.badges = Array.from(badges);
     team.lastUpdated = new Date().toISOString();
     return team;
@@ -595,9 +753,17 @@
       cleanse: Number(team.cleanse || 0),
       wisdom: Number(team.wisdom || 0),
       influence: Number(team.influence || 0),
-      badges: parseBadges(team.badges)
+      badges: parseBadges(team.badges),
+      totalSteps: Number(team.totalSteps || 0),
+      leaderSpiritId: team.leaderSpiritId || team.selectedPetId,
+      teamLevel: Number(team.teamLevel || teamLevelFromStage(team.stage)),
+      teamLevelName: team.teamLevelName || team.stage || "萌芽級",
+      mapProgress: Number(team.mapProgress || 0),
+      unlockedSpirits: ensureArray(team.unlockedSpirits).length ? ensureArray(team.unlockedSpirits) : defaultSpirits.map((spirit) => spirit.petId),
+      completedMapNodes: ensureArray(team.completedMapNodes),
+      lastAiCaptainFeedback: team.lastAiCaptainFeedback || ""
     };
-    cleanTeam.pet = state.pets.find((pet) => pet.petId === cleanTeam.selectedPetId) || null;
+    cleanTeam.pet = state.pets.find((pet) => pet.petId === cleanTeam.leaderSpiritId || pet.petId === cleanTeam.selectedPetId) || null;
     cleanTeam.submissions = getSubmissionsForTeam(cleanTeam.teamId);
     cleanTeam.result = state.results.find((result) => result.teamId === cleanTeam.teamId) || null;
     cleanTeam.completedWeeks = getCompletedWeeks(cleanTeam);
@@ -622,14 +788,21 @@
   function buildDashboardData() {
     const teams = state.teams.map((team) => decorateTeam(team));
     const submissions = [...state.submissions].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const classifiedSubmissions = submissions.filter((item) => item.classificationResult || item.classificationType);
     const results = getAllResults().results;
+    const totalSteps = submissions.reduce((sum, item) => sum + Number(item.stepCount || 0), 0);
     return {
       summary: {
         teamCount: teams.length,
         submissionCount: submissions.length,
         resultCount: results.length,
+        totalSteps,
+        averageSteps: teams.length ? Math.round(totalSteps / teams.length) : 0,
+        classificationCount: classifiedSubmissions.length,
+        averageMapProgress: teams.length ? Math.round(teams.reduce((sum, team) => sum + Number(team.mapProgress || 0), 0) / teams.length) : 0,
         topArea: topName(countBy(submissions, "areaName")),
-        topTrash: topName(countTrashTypes(submissions))
+        topTrash: topName(countTrashTypes(submissions)),
+        topClassification: topName(countBy(classifiedSubmissions, "classificationResult"))
       },
       teams,
       submissions,
@@ -640,6 +813,9 @@
       })),
       areaCounts: entriesFromMap(countBy(submissions, "areaName")),
       trashCounts: entriesFromMap(countTrashTypes(submissions)),
+      classificationCounts: entriesFromMap(countBy(classifiedSubmissions, "classificationResult")),
+      routeCounts: entriesFromMap(countBy(submissions, "routeName")),
+      levelCounts: entriesFromMap(countBy(teams, "teamLevelName")),
       classCounts: entriesFromMap(countBy(teams, "className")),
       latestSubmissions: submissions.slice(0, 8)
     };
@@ -647,10 +823,17 @@
 
   function buildStatsData() {
     const submissions = [...state.submissions];
+    const classifiedSubmissions = submissions.filter((item) => item.classificationResult || item.classificationType);
     const teams = state.teams.map((team) => decorateTeam(team));
     return {
       hotspotRanking: entriesFromMap(countBy(submissions, "areaName")),
       trashRanking: entriesFromMap(countTrashTypes(submissions)),
+      classificationRanking: entriesFromMap(countBy(classifiedSubmissions, "classificationResult")),
+      routeRanking: entriesFromMap(countBy(submissions, "routeName")),
+      stepRanking: teams
+        .map((team) => ({ name: `${team.className} ${team.groupNo} ${team.teamName}`, count: Number(team.totalSteps || 0) }))
+        .sort((a, b) => b.count - a.count),
+      levelRanking: entriesFromMap(countBy(teams, "teamLevelName")),
       reasons: submissions.map((item) => item.possibleReason).filter(Boolean),
       improvements: submissions.map((item) => item.improvementIdea).filter(Boolean),
       teamScores: teams
@@ -660,7 +843,9 @@
           groupNo: team.groupNo,
           teamName: team.teamName,
           total: abilityOrder.reduce((sum, key) => sum + Number(team[key] || 0), 0),
-          stage: team.stage
+          stage: team.stage,
+          teamLevelName: team.teamLevelName,
+          totalSteps: team.totalSteps
         }))
         .sort((a, b) => b.total - a.total),
       submissions
@@ -734,16 +919,18 @@
         <section class="page">
           <div class="hero-band">
             <div>
-              <div class="eyebrow">四週任務</div>
-              <h1>校園綠夥伴：環境復甦任務</h1>
-              <p class="lead">建立小隊，帶著綠夥伴完成校園偵查、熱點分析與守護行動。</p>
+              <div class="eyebrow">${formalProjectName}</div>
+              <h1>${gameDisplayName}</h1>
+              <p class="lead">接受任務、走出教室、累積步數、辨識分類垃圾，讓淨芽精靈恢復能量並解鎖校園地圖。</p>
               <div class="hero-actions">
-                <a class="primary-button" href="#/team">建立小隊</a>
+                <a class="primary-button" href="#/team">建立淨芽小隊</a>
                 <a class="secondary-button" href="#/teacher">教師端</a>
               </div>
             </div>
-            <div class="pet-showcase">${petVisual("pet_leaf_001", "種子期")}</div>
+            <div class="pet-showcase">${petVisual("spirit_green", "萌芽級")}</div>
           </div>
+          ${renderGameLoop()}
+          ${renderAICaptainBox("紫寶隊長發布今日任務：先建立小隊基地，再一起探索校園角落。記得走路注意安全，發現垃圾時要完成辨識與分類。")}
           ${renderMissionPreview(null)}
         </section>
       `;
@@ -754,17 +941,18 @@
       <section class="page">
         <div class="hero-band">
           <div>
-            <div class="eyebrow">${escapeHtml(team.className)} ${escapeHtml(team.groupNo)}</div>
-            <h1>${escapeHtml(team.teamName)} 與 ${escapeHtml(team.customPetName)} 正在${escapeHtml(team.stage)}</h1>
-            <p class="lead">目前已完成 ${team.completedWeeks.length} 個任務節點，下一步可前往任務地圖或查看成長狀態。</p>
+            <div class="eyebrow">${escapeHtml(team.className)} ${escapeHtml(team.groupNo)}｜${gameDisplayName}</div>
+            <h1>${escapeHtml(team.teamName)} 正在${escapeHtml(team.teamLevelName || team.stage)}</h1>
+            <p class="lead">隊長精靈 ${escapeHtml(team.customPetName)} 已累積 ${Number(team.totalSteps || 0)} 步，地圖進度 ${Number(team.mapProgress || 0)}%。下一步可前往任務地圖或小隊基地。</p>
             <div class="hero-actions">
               <a class="primary-button" href="#/map">前往任務地圖</a>
-              <a class="secondary-button" href="#/growth">查看成長</a>
+              <a class="secondary-button" href="#/growth">小隊基地</a>
             </div>
           </div>
-          <div class="pet-showcase">${petVisual(team.selectedPetId, team.stage)}</div>
+          <div class="pet-showcase">${petVisual(team.leaderSpiritId || team.selectedPetId, team.stage)}</div>
         </div>
         ${renderTeamStrip(team)}
+        ${renderAICaptainBox(team.lastAiCaptainFeedback || "紫寶隊長提醒：今天先確認任務卡，再決定要走哪一條校園探索路線。")}
         ${renderMissionPreview(team)}
       </section>
     `;
@@ -775,14 +963,14 @@
       <section class="page">
         <div class="page-head">
           <div>
-            <div class="eyebrow">小隊建立</div>
-            <h1>選擇班級、組別與綠夥伴</h1>
+            <div class="eyebrow">淨芽小隊建立</div>
+            <h1>選擇班級、組別與隊長精靈</h1>
           </div>
           ${team ? `<a class="secondary-button" href="#/map">回任務地圖</a>` : ""}
         </div>
         <div class="grid two">
           <div class="panel">
-            <h2>建立新小隊</h2>
+            <h2>建立淨芽小隊</h2>
             <form id="createTeamForm">
               <div class="form-grid">
                 ${selectField("className", "班級", state.classes.map((item) => item.className), "", true)}
@@ -790,16 +978,17 @@
               </div>
               <div class="form-grid">
                 ${inputField("teamName", "小隊名稱", "例如：綠光小隊", "", true)}
-                ${inputField("customPetName", "綠夥伴名稱", "例如：阿葉隊長", "", true)}
+                ${inputField("customPetName", "隊長精靈暱稱", "例如：綠芽隊長", "", true)}
               </div>
               <fieldset class="field">
-                <legend>選擇綠夥伴</legend>
+                <legend>選擇隊長精靈</legend>
                 <div class="pet-grid">
                   ${state.pets.map((pet, index) => `
                     <label class="pet-option">
                       <input type="radio" name="selectedPetId" value="${escapeAttr(pet.petId)}" ${index === 0 ? "checked" : ""}>
-                      ${petVisual(pet.petId, "種子期", "small")}
+                      ${petVisual(pet.petId, "萌芽級", "small")}
                       <strong>${escapeHtml(pet.petName)}</strong>
+                      <span class="chip">${escapeHtml(pet.spiritRole || "淨芽精靈")}</span>
                       <span>${escapeHtml(pet.description)}</span>
                       <span>${escapeHtml(pet.trait)}</span>
                     </label>
@@ -807,7 +996,7 @@
                 </div>
               </fieldset>
               <div class="button-row">
-                <button class="primary-button" type="submit">建立小隊</button>
+                <button class="primary-button" type="submit">建立淨芽小隊</button>
               </div>
             </form>
           </div>
@@ -834,7 +1023,7 @@
         const form = new FormData(event.currentTarget);
         const data = await api("createTeam", Object.fromEntries(form.entries()));
         setCurrentTeam(data.team);
-        showToast("小隊已建立，甦醒徽章已解鎖");
+        showToast("淨芽小隊已建立，淨芽集結徽章已解鎖");
         location.hash = "#/map";
       });
     });
@@ -864,12 +1053,26 @@
       <section class="page">
         <div class="page-head">
           <div>
-            <div class="eyebrow">任務地圖</div>
-            <h1>${escapeHtml(team.teamName)} 的四週進度</h1>
+            <div class="eyebrow">校園探索地圖</div>
+            <h1>${escapeHtml(team.teamName)} 的地圖節點與任務卡</h1>
           </div>
-          <a class="secondary-button" href="#/growth">成長狀態</a>
+          <a class="secondary-button" href="#/growth">小隊基地</a>
         </div>
         ${renderTeamStrip(team)}
+        ${renderTodayTaskCard(team)}
+        <div class="panel">
+          <div class="page-head compact">
+            <div>
+              <h2>校園地圖節點</h2>
+              <p class="meta">已解鎖區域會隨任務與小隊等級逐步增加。</p>
+            </div>
+            <span class="chip">地圖進度 ${Number(team.mapProgress || 0)}%</span>
+          </div>
+          <img class="map-visual" src="${escapeAttr(uiAssets.campusMap)}" alt="" loading="lazy">
+          <div class="map-node-grid">
+            ${activeRows(state.mapNodes || []).map((node) => renderMapNode(node, team)).join("")}
+          </div>
+        </div>
         <div class="mission-grid">
           ${state.missions.map((mission) => renderMissionCard(mission, team)).join("")}
         </div>
@@ -903,6 +1106,7 @@
       `;
       return;
     }
+    const taskType = missionTaskType(mission);
 
     app.innerHTML = `
       <section class="page">
@@ -915,34 +1119,19 @@
           <a class="secondary-button" href="#/map">回地圖</a>
         </div>
         ${renderTeamStrip(team)}
+        ${renderMissionTaskCard(mission, team)}
+        ${renderAICaptainBox(mission.aiCaptainHint || "先確認地點、路線與分類目標，再開始填寫任務回報。")}
         <div class="panel">
           <form id="missionForm">
-            <div class="form-grid">
-              ${selectField("areaName", "調查地點", state.areas.map((item) => item.areaName), "", true)}
-              ${selectField("amountLevel", "數量感受", amountOptions, "", true)}
-            </div>
-            ${textareaField("problemFound", "發現問題", "寫下你們看到的環境問題", "", true)}
-            <fieldset class="field">
-              <legend>垃圾類型</legend>
-              <div class="check-grid">
-                ${trashOptions.map((item) => `
-                  <label class="check-pill">
-                    <input type="checkbox" name="trashTypes" value="${escapeAttr(item)}">
-                    <span>${escapeHtml(item)}</span>
-                  </label>
-                `).join("")}
-              </div>
-            </fieldset>
-            ${textareaField("possibleReason", "可能原因", "你們覺得問題為什麼會發生", "", true)}
-            ${textareaField("improvementIdea", "改善想法", "提出一個小隊做得到或能倡議的做法", "", true)}
-            <div class="form-grid">
-              ${inputField("photoNote", "照片說明", "可留空", "", false)}
-              ${inputField("photoUrl", "任務照片連結", "可留空", "", false)}
-            </div>
-            ${textareaField("reflection", "小組反思", "可留空", "", false)}
+            <input type="hidden" name="missionCardId" value="${escapeAttr(mission.missionId)}">
+            <input type="hidden" name="mapNodeId" value="${escapeAttr(mission.mapNodeId || "")}">
+            <input type="hidden" name="stepTarget" value="${escapeAttr(stepTargetValue(mission.stepTarget, state.settings.defaultStepTarget, 800))}">
+            <input type="hidden" name="aiCaptainHintUsed" value="${escapeAttr(mission.aiCaptainHint || "")}">
+            <input type="hidden" name="taskType" value="${escapeAttr(taskType)}">
+            ${renderMissionFormFields(mission, week)}
             <div class="button-row">
-              <button class="primary-button" type="submit">提交任務回報</button>
-              ${week === 4 ? `<a class="secondary-button" href="#/result">填寫成果卡</a>` : ""}
+              <button class="primary-button" type="submit">${taskType === "team" ? "完成小隊集結" : "提交任務回報"}</button>
+              ${week === 4 ? `<a class="secondary-button" href="#/result">填寫守護報告</a>` : ""}
             </div>
           </form>
         </div>
@@ -966,9 +1155,83 @@
     });
   }
 
+  function renderMissionFormFields(mission, week) {
+    const taskType = missionTaskType(mission);
+    const target = stepTargetValue(mission.stepTarget, state.settings.defaultStepTarget, 800);
+    if (taskType === "team") {
+      return `
+        <input type="hidden" name="areaName" value="${escapeAttr(missionAreaName(mission))}">
+        <input type="hidden" name="routeName" value="${escapeAttr(mission.routeName || "小隊基地集結")}">
+        <input type="hidden" name="amountLevel" value="少量">
+        <input type="hidden" name="problemFound" value="完成淨芽小隊集結">
+        <input type="hidden" name="possibleReason" value="小隊已完成角色分工與任務約定">
+        <input type="hidden" name="improvementIdea" value="一起遵守安全提醒，開始校園健康冒險">
+        <div class="mission-complete-card">
+          <strong>小隊基地已啟動</strong>
+          <p>你們已經建立淨芽小隊並選好隊長精靈。按下完成後，系統會記錄第 1 週集結任務，下一步就能依教師開放週次前往校園探索。</p>
+        </div>
+        ${textareaField("reflection", "小隊約定", "例如：走路注意安全、看到垃圾先觀察再分類、大家輪流記錄。", "", false)}
+      `;
+    }
+
+    const explorationBlock = `
+      <h2>探索紀錄</h2>
+      <div class="form-grid">
+        ${selectField("areaName", "調查地點", state.areas.map((item) => item.areaName), "", true)}
+        ${inputField("routeName", "探索路線", mission.routeName || "例如：操場東側探索路線", mission.routeName || "", false)}
+        ${inputField("stepCount", "本次步數", target ? `目標 ${target} 步` : "可留空", "", false, "number")}
+        ${selectField("amountLevel", "數量感受", amountOptions, "", true)}
+      </div>
+    `;
+    const discoveryBlock = `
+      <h2>${taskType === "advocate" ? "守護行動紀錄" : "發現紀錄"}</h2>
+      ${textareaField("problemFound", taskType === "advocate" ? "主要行動或發現" : "發現問題", "寫下你們看到的環境問題或守護行動", "", true)}
+      <fieldset class="field">
+        <legend>垃圾或問題類型</legend>
+        <div class="check-grid">
+          ${trashOptions.map((item) => `
+            <label class="check-pill">
+              <input type="checkbox" name="trashTypes" value="${escapeAttr(item)}">
+              <span>${escapeHtml(item)}</span>
+            </label>
+          `).join("")}
+        </div>
+      </fieldset>
+    `;
+    const classificationBlock = taskType === "classify" ? `
+      <h2>垃圾辨識與分類挑戰</h2>
+      ${inputField("identifiedItem", "辨識物品", "例如：寶特瓶、飲料杯、包裝紙", "", true)}
+      ${selectField("classificationResult", "分類結果", classificationOptions, "", true)}
+      ${textareaField("classificationReason", "分類理由", "為什麼這樣分類？如果不確定，也請寫下判斷依據。", "", true)}
+      ${inputField("aiGuessNote", "AI 或小組辨識說明", "可寫：小組判斷為寶特瓶；AI 小隊長提醒需清空再回收", "", false)}
+      <div class="challenge-box">
+        <strong>分類小挑戰</strong>
+        <span>如果看到乾淨寶特瓶，通常可以選「資源回收」。若有嚴重髒污，請在分類理由補充處理方式。</span>
+      </div>
+    ` : `
+      <div class="challenge-box">
+        <strong>${taskType === "advocate" ? "守護報告提醒" : "紫寶隊長提醒"}</strong>
+        <span>${taskType === "advocate" ? "第 4 週重點是整理成果與提出倡議。完成這筆行動紀錄後，記得產生淨芽小隊守護報告。" : "這一週先專心觀察路線、步數與環境問題；垃圾分類挑戰會在第 3 週正式進行。"}</span>
+      </div>
+    `;
+    return `
+      ${explorationBlock}
+      ${discoveryBlock}
+      ${classificationBlock}
+      <h2>改善想法與反思</h2>
+      ${textareaField("possibleReason", "可能原因", "你們覺得問題為什麼會發生", "", true)}
+      ${textareaField("improvementIdea", taskType === "advocate" ? "宣導或改善行動" : "改善想法", "提出一個小隊做得到或能倡議的做法", "", true)}
+      <div class="form-grid">
+        ${inputField("photoNote", "照片說明", "可留空", "", false)}
+        ${inputField("photoUrl", "任務照片連結", "可留空", "", false)}
+      </div>
+      ${textareaField("reflection", "小組反思", week === 4 ? "可寫下發表前想提醒全校同學的話" : "可留空", "", false)}
+    `;
+  }
+
   function renderGrowthPage(team) {
     if (!team) {
-      renderNeedTeam("先建立小隊，再查看綠夥伴成長");
+      renderNeedTeam("先建立小隊，再查看小隊基地");
       return;
     }
 
@@ -976,19 +1239,36 @@
       <section class="page">
         <div class="page-head">
           <div>
-            <div class="eyebrow">綠夥伴成長</div>
-            <h1>${escapeHtml(team.customPetName)} 目前是${escapeHtml(team.stage)}</h1>
+            <div class="eyebrow">小隊基地</div>
+            <h1>${escapeHtml(team.teamName)}｜${escapeHtml(team.teamLevelName || team.stage)}</h1>
+            <p class="lead">累積 ${Number(team.totalSteps || 0)} 步，地圖進度 ${Number(team.mapProgress || 0)}%。</p>
           </div>
           <a class="primary-button" href="#/map">繼續任務</a>
         </div>
         <div class="grid two">
           <div class="panel">
-            <div class="pet-showcase">${petVisual(team.selectedPetId, team.stage)}</div>
+            <h2>隊長精靈</h2>
+            <div class="pet-showcase">${petVisual(team.leaderSpiritId || team.selectedPetId, team.stage)}</div>
+            <p class="lead">${escapeHtml(team.customPetName)}｜${escapeHtml(team.pet?.spiritRole || "淨芽精靈")}</p>
             <div class="badge-list">${team.badges.map((badge) => `<span class="badge">${escapeHtml(badge)}</span>`).join("")}</div>
           </div>
           <div class="panel">
-            <h2>能力值</h2>
+            <h2>精靈能量</h2>
+            <img class="base-visual" src="${escapeAttr(uiAssets.campusBase)}" alt="" loading="lazy">
             ${renderMeters(team)}
+          </div>
+        </div>
+        ${renderAICaptainBox(team.lastAiCaptainFeedback || "紫寶隊長提醒：完成任務後，記得把步數、分類理由和改善想法寫清楚。")}
+        <div class="panel">
+          <h2>六位淨芽精靈</h2>
+          <div class="spirit-roster">
+            ${state.pets.map((pet) => renderSpiritCard(pet, team)).join("")}
+          </div>
+        </div>
+        <div class="panel">
+          <h2>地圖解鎖進度</h2>
+          <div class="map-node-grid">
+            ${activeRows(state.mapNodes || []).map((node) => renderMapNode(node, team)).join("")}
           </div>
         </div>
         <div class="panel">
@@ -1001,7 +1281,7 @@
 
   function renderResultPage(team) {
     if (!team) {
-      renderNeedTeam("先建立小隊，再產生成果卡");
+      renderNeedTeam("先建立小隊，再產生守護報告");
       return;
     }
 
@@ -1014,14 +1294,14 @@
       <section class="page">
         <div class="page-head">
           <div>
-            <div class="eyebrow">成果卡</div>
-            <h1>${escapeHtml(team.teamName)} 的校園綠夥伴成果卡</h1>
+            <div class="eyebrow">淨芽小隊守護報告</div>
+            <h1>${escapeHtml(team.teamName)} 的校園守護成果</h1>
           </div>
-          <a class="secondary-button" href="#/growth">成長狀態</a>
+          <a class="secondary-button" href="#/growth">小隊基地</a>
         </div>
         ${result ? renderResultCard(team, result) : ""}
         <div class="panel">
-          <h2>${result ? "更新成果卡" : "建立成果卡"}</h2>
+          <h2>${result ? "更新守護報告" : "建立守護報告"}</h2>
           <form id="resultForm">
             <div class="form-grid">
               ${selectField("mainArea", "主要調查地點", knownAreas, result?.mainArea || "", true)}
@@ -1031,7 +1311,8 @@
             ${textareaField("mainReason", "可能原因", "小隊分析出的原因", result?.mainReason || "", true)}
             ${textareaField("proposal", "改善提案", "具體可行的改善方法", result?.proposal || "", true)}
             ${textareaField("commitment", "行動承諾", "小隊未來願意持續做到的行動", result?.commitment || "", true)}
-            <button class="primary-button" type="submit">${result ? "更新成果卡" : "產生成果卡"}</button>
+            ${textareaField("aiCaptainSummary", "AI 小隊長回饋", "可留空，系統會依資料產生摘要", result?.aiCaptainSummary || "", false)}
+            <button class="primary-button" type="submit">${result ? "更新守護報告" : "產生守護報告"}</button>
           </form>
         </div>
       </section>
@@ -1045,7 +1326,7 @@
         payload.teamId = team.teamId;
         const data = await api("createResultCard", payload);
         setCurrentTeam(data.team);
-        showToast("成果卡已儲存，綠夥伴進入守護期");
+        showToast("守護報告已儲存，淨芽小隊進入守護級");
         render();
       });
     });
@@ -1095,7 +1376,7 @@
         <div class="page-head">
           <div>
             <div class="eyebrow">教師端</div>
-            <h1>任務資料總覽</h1>
+            <h1>淨芽小隊任務資料總覽</h1>
           </div>
           <button class="secondary-button" id="teacherLogoutButton" type="button">離開教師端</button>
         </div>
@@ -1126,9 +1407,13 @@
       <div class="stat-row">
         ${statCard("小隊總數", dashboard.summary.teamCount)}
         ${statCard("任務回報", dashboard.summary.submissionCount)}
-        ${statCard("成果卡", dashboard.summary.resultCount)}
+        ${statCard("守護報告", dashboard.summary.resultCount)}
+        ${statCard("累積步數", dashboard.summary.totalSteps || 0)}
+        ${statCard("平均步數", dashboard.summary.averageSteps || 0)}
+        ${statCard("分類任務", dashboard.summary.classificationCount || 0)}
+        ${statCard("地圖進度", `${dashboard.summary.averageMapProgress || 0}%`)}
         ${statCard("熱門區域", dashboard.summary.topArea || "尚無")}
-        ${statCard("常見垃圾", dashboard.summary.topTrash || "尚無")}
+        ${statCard("常見分類", dashboard.summary.topClassification || "尚無")}
       </div>
       <div class="grid two">
         <div class="panel">
@@ -1148,13 +1433,15 @@
       <div class="panel">
         <h2>小隊管理</h2>
         ${renderTable(
-          ["班級", "組別", "隊名", "綠夥伴", "階段", "徽章"],
+          ["班級", "組別", "隊名", "隊長精靈", "小隊等級", "累積步數", "地圖進度", "徽章"],
           dashboard.teams.map((team) => [
             team.className,
             team.groupNo,
             team.teamName,
             team.customPetName,
-            team.stage,
+            team.teamLevelName || team.stage,
+            team.totalSteps || 0,
+            `${team.mapProgress || 0}%`,
             team.badges.join("、")
           ]),
           "目前尚無小隊"
@@ -1168,14 +1455,17 @@
       <div class="panel">
         <h2>回報紀錄</h2>
         ${renderTable(
-          ["時間", "班級", "組別", "週次", "地點", "垃圾類型", "發現問題", "改善想法"],
+          ["時間", "班級", "組別", "週次", "地點", "路線", "步數", "分類結果", "分類理由", "發現問題", "改善想法"],
           dashboard.submissions.map((item) => [
             dateText(item.createdAt),
             item.className,
             item.groupNo,
             `第 ${item.week} 週`,
             item.areaName,
-            ensureArray(item.trashTypes).join("、"),
+            item.routeName || "",
+            item.stepCount || 0,
+            item.classificationResult || item.classificationType || "",
+            item.classificationReason || "",
             item.problemFound,
             item.improvementIdea
           ]),
@@ -1199,11 +1489,21 @@
           ${renderCountList(stats.trashRanking)}
         </div>
       </div>
+      <div class="grid two">
+        <div class="panel">
+          <h2>分類結果統計</h2>
+          ${renderCountList(stats.classificationRanking)}
+        </div>
+        <div class="panel">
+          <h2>探索路線統計</h2>
+          ${renderCountList(stats.routeRanking)}
+        </div>
+      </div>
       <div class="panel">
-        <h2>各組能力值排行</h2>
+        <h2>各組能量與步數排行</h2>
         ${renderTable(
-          ["班級", "組別", "隊名", "總分", "階段"],
-          stats.teamScores.map((team) => [team.className, team.groupNo, team.teamName, team.total, team.stage]),
+          ["班級", "組別", "隊名", "總能量", "步數", "等級"],
+          stats.teamScores.map((team) => [team.className, team.groupNo, team.teamName, team.total, team.totalSteps || 0, team.teamLevelName || team.stage]),
           "目前尚無分數"
         )}
       </div>
@@ -1224,9 +1524,9 @@
   function renderTeacherResults(dashboard) {
     document.querySelector("#teacherContent").innerHTML = `
       <div class="panel">
-        <h2>成果卡管理</h2>
+        <h2>守護報告管理</h2>
         ${dashboard.results.length ? dashboard.results.map((result) => renderResultCard(result.team, result)).join("") : `
-          <div class="empty-state">目前尚無成果卡</div>
+          <div class="empty-state">目前尚無守護報告</div>
         `}
       </div>
     `;
@@ -1253,6 +1553,10 @@
           <h2>校園區域</h2>
           <div class="chip-list">${state.areas.map((item) => `<span class="chip">${escapeHtml(item.areaName)}</span>`).join("")}</div>
         </div>
+        <div class="panel">
+          <h2>地圖節點</h2>
+          <div class="chip-list">${activeRows(state.mapNodes || []).map((item) => `<span class="chip">${escapeHtml(item.nodeName)}｜${escapeHtml(item.routeName || "")}</span>`).join("")}</div>
+        </div>
       </div>
     `;
 
@@ -1271,6 +1575,123 @@
         render();
       });
     });
+  }
+
+  function renderGameLoop() {
+    const steps = ["接受任務", "走出教室", "累積步數", "遇見垃圾", "拍照辨識", "撿拾分類", "精靈得能量", "解鎖新地圖"];
+    return `
+      <div class="loop-panel">
+        <img class="loop-visual" src="${escapeAttr(uiAssets.missionLoop)}" alt="" loading="lazy">
+        <div class="loop-strip">
+          ${steps.map((step, index) => `
+            <div class="loop-step">
+              <span>${index + 1}</span>
+              <strong>${escapeHtml(step)}</strong>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderAICaptainBox(message) {
+    return `
+      <div class="ai-captain">
+        <img class="captain-avatar image-avatar" src="${escapeAttr(uiAssets.aiCaptain)}" alt="" loading="lazy">
+        <div>
+          <strong>${escapeHtml(state.settings.aiCaptainName || "紫寶隊長")}</strong>
+          <p>${escapeHtml(message)}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderTodayTaskCard(team) {
+    const currentWeek = Number(state.settings.currentWeek || 1);
+    const openMissions = state.missions.filter((mission) => Number(mission.week) <= currentWeek);
+    const nextMission = openMissions.find((mission) => !team.completedWeeks.includes(Number(mission.week)))
+      || state.missions.find((mission) => Number(mission.week) === currentWeek)
+      || state.missions[0];
+    return renderMissionTaskCard(nextMission, team);
+  }
+
+  function renderMissionTaskCard(mission, team) {
+    if (!mission) return "";
+    const target = stepTargetValue(mission.stepTarget, state.settings.defaultStepTarget, 800);
+    const locked = team && Number(mission.week) > Number(state.settings.currentWeek || 1);
+    return `
+      <article class="task-card">
+        <div>
+          <div class="eyebrow">今日任務卡</div>
+          <h2>${escapeHtml(mission.title)}</h2>
+          <p>${escapeHtml(mission.story)}</p>
+        </div>
+        <div class="task-facts">
+          ${fact("任務路線", mission.routeName || "依教師指示")}
+          ${fact("目標步數", target ? `${target} 步` : "建立小隊")}
+          ${fact("任務地點", mapNodeForMission(mission)?.areaName || mission.mapNodeId || "校園")}
+          ${fact("獎勵能量", rewardTextForMission(mission))}
+        </div>
+        ${renderAICaptainBox(mission.aiCaptainHint || "完成任務後，請把步數、分類與改善想法寫清楚。")}
+        ${team
+          ? locked
+            ? `<span class="chip">尚未開放</span>`
+            : `<a class="primary-button mini" href="#/mission/${mission.week}">${missionTaskType(mission) === "team" ? "完成集結" : "前往回報"}</a>`
+          : `<a class="primary-button mini" href="#/team">建立小隊</a>`}
+      </article>
+    `;
+  }
+
+  function renderMapNode(node, team) {
+    const completed = team.completedMapNodes.includes(node.mapNodeId);
+    const unlocked = isMapNodeUnlocked(node, team);
+    return `
+      <article class="map-node ${completed ? "complete" : unlocked ? "" : "locked"}">
+        <div class="node-icon">${escapeHtml(node.icon || "點")}</div>
+        <div>
+          <h3>${escapeHtml(node.nodeName)}</h3>
+          <p>${escapeHtml(node.description || "")}</p>
+          <div class="chip-list">
+            <span class="chip">第 ${escapeHtml(node.week || "-")} 週</span>
+            <span class="chip">${escapeHtml(node.routeName || "校園路線")}</span>
+            ${node.stepTarget ? `<span class="chip">${escapeHtml(node.stepTarget)} 步</span>` : ""}
+            <span class="chip">${completed ? "已完成" : unlocked ? "已解鎖" : "未解鎖"}</span>
+          </div>
+        </div>
+      </article>
+    `;
+  }
+
+  function renderSpiritCard(pet, team) {
+    const active = (team.unlockedSpirits || []).includes(pet.petId);
+    const isLeader = team.leaderSpiritId === pet.petId || team.selectedPetId === pet.petId;
+    return `
+      <article class="spirit-card ${active ? "" : "locked"} ${isLeader ? "leader" : ""}">
+        ${petVisual(pet.petId, team.stage, "small")}
+        <div>
+          <h3>${escapeHtml(pet.petName)} ${isLeader ? "｜隊長" : ""}</h3>
+          <p class="meta">${escapeHtml(pet.spiritRole || "淨芽精靈")}｜${escapeHtml(abilityLabels[pet.primaryEnergy] || pet.primaryEnergy || "")}</p>
+          <p>${escapeHtml(pet.description || pet.trait || "")}</p>
+        </div>
+      </article>
+    `;
+  }
+
+  function isMapNodeUnlocked(node, team) {
+    const week = Number(node.week || 1);
+    return week <= Number(state.settings.currentWeek || 1) || team.completedMapNodes.includes(node.mapNodeId) || Number(team.teamLevel || 1) >= Math.max(1, week - 1);
+  }
+
+  function mapNodeForMission(mission) {
+    return activeRows(state.mapNodes || []).find((node) => node.mapNodeId === mission.mapNodeId) || null;
+  }
+
+  function rewardTextForMission(mission) {
+    const type = mission.taskType || "";
+    if (type === "explore") return "健康能量、探索能量";
+    if (type === "classify") return "智慧能量、淨化能量";
+    if (type === "advocate") return "守護能量、淨化能量";
+    return "守護能量";
   }
 
   function renderMissionPreview(team) {
@@ -1292,6 +1713,7 @@
         <div class="mission-number">${mission.week}</div>
         <h3>${escapeHtml(mission.title)}</h3>
         <p class="meta">${escapeHtml(mission.story)}</p>
+        <p class="meta">路線：${escapeHtml(mission.routeName || "依任務指示")}｜${stepTargetValue(mission.stepTarget, state.settings.defaultStepTarget, 800) ? `目標 ${escapeHtml(stepTargetValue(mission.stepTarget, state.settings.defaultStepTarget, 800))} 步` : "小隊集結"}</p>
         <span class="chip">${statusText}</span>
         ${team && !locked
           ? `<a class="primary-button mini" href="#/mission/${mission.week}">${completed ? "新增回報" : "開始任務"}</a>`
@@ -1303,16 +1725,18 @@
   function renderTeamStrip(team) {
     return `
       <div class="team-strip card">
-        ${petVisual(team.selectedPetId, team.stage, "small")}
+        ${petVisual(team.leaderSpiritId || team.selectedPetId, team.stage, "small")}
         <div>
           <div class="meta">${escapeHtml(team.className)} ${escapeHtml(team.groupNo)}</div>
           <h2>${escapeHtml(team.teamName)}｜${escapeHtml(team.customPetName)}</h2>
           <div class="chip-list">
-            <span class="chip">${escapeHtml(team.stage)}</span>
+            <span class="chip">${escapeHtml(team.teamLevelName || team.stage)}</span>
             <span class="chip">${team.submissions.length} 筆回報</span>
+            <span class="chip">${Number(team.totalSteps || 0)} 步</span>
+            <span class="chip">地圖 ${Number(team.mapProgress || 0)}%</span>
           </div>
         </div>
-        <a class="secondary-button" href="#/growth">成長</a>
+        <a class="secondary-button" href="#/growth">基地</a>
       </div>
     `;
   }
@@ -1343,9 +1767,14 @@
       <div class="grid">
         ${submissions.map((item) => `
           <article class="card">
-            <div class="meta">${dateText(item.createdAt)}｜第 ${escapeHtml(item.week)} 週｜${escapeHtml(item.areaName || "")}</div>
+            <div class="meta">${dateText(item.createdAt)}｜第 ${escapeHtml(item.week)} 週｜${escapeHtml(item.areaName || "")}｜${escapeHtml(item.routeName || "未填路線")}</div>
             <h3>${escapeHtml(item.problemFound || "")}</h3>
-            <div class="chip-list">${ensureArray(item.trashTypes).map((type) => `<span class="chip">${escapeHtml(type)}</span>`).join("")}</div>
+            <div class="chip-list">
+              ${ensureArray(item.trashTypes).map((type) => `<span class="chip">${escapeHtml(type)}</span>`).join("")}
+              ${item.classificationResult ? `<span class="chip">${escapeHtml(item.classificationResult)}</span>` : ""}
+              ${item.stepCount ? `<span class="chip">${escapeHtml(item.stepCount)} 步</span>` : ""}
+            </div>
+            ${item.classificationReason ? `<p class="meta">分類理由：${escapeHtml(item.classificationReason)}</p>` : ""}
             <p>${escapeHtml(item.improvementIdea || "")}</p>
           </article>
         `).join("")}
@@ -1358,21 +1787,25 @@
     return `
       <article class="result-card">
         <div class="result-head">
-          ${petVisual(team.selectedPetId, "守護期", "medium")}
+          ${petVisual(team.leaderSpiritId || team.selectedPetId, "守護級", "medium")}
           <div>
             <div class="eyebrow">${escapeHtml(team.className)} ${escapeHtml(team.groupNo)}</div>
-            <h2>${escapeHtml(team.teamName)}｜${escapeHtml(team.customPetName)}</h2>
+            <h2>${escapeHtml(result.reportTitle || `${team.teamName} 淨芽小隊守護報告`)}</h2>
             <div class="badge-list">${team.badges.map((badge) => `<span class="badge">${escapeHtml(badge)}</span>`).join("")}</div>
           </div>
         </div>
         <div class="result-facts">
-          ${fact("最終型態", result.finalStage || team.stage)}
+          ${fact("小隊等級", result.finalStage || team.teamLevelName || team.stage)}
+          ${fact("累積步數", result.totalSteps || team.totalSteps || 0)}
+          ${fact("解鎖地圖", result.exploredAreas || unique(team.submissions.map((item) => item.areaName)).join("、"))}
           ${fact("主要地點", result.mainArea)}
           ${fact("主要發現", result.mainFinding)}
+          ${fact("垃圾辨識結果", result.classificationSummary || buildClassificationSummary(team.submissions))}
           ${fact("可能原因", result.mainReason)}
           ${fact("改善提案", result.proposal)}
           ${fact("宣導口號", result.slogan)}
           ${fact("行動承諾", result.commitment)}
+          ${fact("AI 小隊長回饋", result.aiCaptainSummary)}
           ${fact("成果摘要", result.summaryText)}
         </div>
       </article>
@@ -1396,7 +1829,7 @@
       ["teams", "小隊", "#/teacher/teams"],
       ["submissions", "回報", "#/teacher/submissions"],
       ["stats", "熱點分析", "#/teacher/stats"],
-      ["results", "成果卡", "#/teacher/results"],
+      ["results", "守護報告", "#/teacher/results"],
       ["settings", "設定", "#/teacher/settings"]
     ];
     return `
@@ -1483,7 +1916,23 @@
     `;
   }
 
+  function spiritAssetFor(petId, stage) {
+    const pet = state?.pets?.find((item) => item.petId === petId) || {};
+    const stageIndex = Math.max(1, stageRank.indexOf(stage) + 1);
+    return pet[`imageStage${stageIndex}`] || pet.imageStage1 || spiritImageAssets[petId] || "";
+  }
+
   function petVisual(petId, stage, size = "") {
+    const imageSrc = spiritAssetFor(petId, stage);
+    if (imageSrc) {
+      const pet = state?.pets?.find((item) => item.petId === petId);
+      return `
+        <div class="pet-visual image ${escapeAttr(size)}" aria-hidden="true">
+          <img src="${escapeAttr(imageSrc)}" alt="${escapeAttr(pet?.petName || "淨芽精靈")}" loading="lazy">
+        </div>
+      `;
+    }
+
     const rank = Math.max(0, stageRank.indexOf(stage));
     const scale = 1 + rank * 0.08;
     const style = {
@@ -1491,7 +1940,13 @@
       pet_step_001: ["#83c7df", "#2f7ca8", "#f2c14e"],
       pet_clean_001: ["#f7f8ff", "#6aa1b8", "#f2c14e"],
       pet_light_001: ["#ffe18a", "#bc7b3a", "#ffffff"],
-      pet_bud_001: ["#90cf6f", "#d96b5d", "#f4d35e"]
+      pet_bud_001: ["#90cf6f", "#d96b5d", "#f4d35e"],
+      spirit_green: ["#6fcf79", "#2f7c52", "#dff7b7"],
+      spirit_water: ["#86d7f6", "#2f7ca8", "#e3f7ff"],
+      spirit_sun: ["#ffd86a", "#bc7b3a", "#fff3a6"],
+      spirit_purple: ["#a884df", "#5f3c95", "#f1e7ff"],
+      spirit_heart: ["#f59ac2", "#b64f7b", "#ffe1ed"],
+      spirit_potato: ["#b98a5b", "#744a2f", "#f5deb8"]
     }[petId] || ["#83c66b", "#2e7d59", "#f2c14e"];
     const [body, accent, glow] = style;
     const horns = rank >= 2 ? `<path d="M84 62c-21-23-25-45-13-58 15 16 22 33 21 55M174 62c21-23 25-45 13-58-15 16-22 33-21 55" fill="${accent}" opacity=".86"/>` : "";
@@ -1523,25 +1978,65 @@
   }
 
   function buildResultSummary(team, result) {
-    return `${team.teamName} 在${result.mainArea}發現「${result.mainFinding}」，分析原因可能是${result.mainReason}。小隊提出「${result.proposal}」，並用「${result.slogan}」提醒大家一起守護校園。`;
+    return `${team.teamName} 累積 ${Number(team.totalSteps || 0)} 步，在${result.mainArea}發現「${result.mainFinding}」，分析原因可能是${result.mainReason}。小隊提出「${result.proposal}」，並用「${result.slogan}」提醒大家一起守護校園。`;
+  }
+
+  function buildClassificationSummary(submissions) {
+    const parts = submissions
+      .filter((item) => item.classificationResult || item.identifiedItem)
+      .map((item) => `${item.identifiedItem || ensureArray(item.trashTypes)[0] || "垃圾"}：${item.classificationResult || "未分類"}`);
+    return parts.length ? parts.join("；") : "尚未完成垃圾辨識分類";
+  }
+
+  function buildAICaptainFeedback(team, submission) {
+    const classificationText = submission.classificationResult
+      ? `，並判斷它屬於「${submission.classificationResult}」`
+      : "";
+    return `${team.teamName} 完成了 ${submission.areaName || "校園"} 的探索任務！你們累積了 ${Number(submission.stepCount || 0)} 步，發現了「${submission.identifiedItem || submission.problemFound || "環境問題"}」${classificationText}。紫寶隊長提醒：下一步可以想想問題為什麼會出現在這裡，以及怎麼讓它下次不要再出現。`;
+  }
+
+  function buildAICaptainReportSummary(team, result) {
+    return `紫寶隊長回饋：${team.teamName} 已整理出主要發現與改善提案，可以把「${result.slogan || "一起守護校園"}」作為宣導重點，邀請更多同學一起行動。`;
+  }
+
+  function teamLevelFromStage(stage) {
+    const index = stageRank.indexOf(stage);
+    return index >= 0 ? index + 1 : 1;
+  }
+
+  function numberValue(value) {
+    const numeric = Number(value || 0);
+    return Number.isFinite(numeric) && numeric > 0 ? numeric : 0;
+  }
+
+  function stepTargetValue(...values) {
+    const raw = values.find((value) => value !== undefined && value !== null && value !== "");
+    return numberValue(raw);
+  }
+
+  function mainDeltaKey(delta) {
+    return abilityOrder.reduce((best, key) => Number(delta[key] || 0) > Number(delta[best] || 0) ? key : best, abilityOrder[0]);
   }
 
   function buildAiPrompt(submissions) {
     const rows = submissions.map((item, index) => {
-      return `${index + 1}. ${item.className} ${item.groupNo}｜第 ${item.week} 週｜地點：${item.areaName}｜垃圾類型：${ensureArray(item.trashTypes).join("、")}｜發現：${item.problemFound}｜原因：${item.possibleReason}｜改善：${item.improvementIdea}`;
+      return `${index + 1}. ${item.className} ${item.groupNo}｜第 ${item.week} 週｜地點：${item.areaName}｜路線：${item.routeName || "未填"}｜步數：${item.stepCount || 0}｜垃圾類型：${ensureArray(item.trashTypes).join("、")}｜辨識：${item.identifiedItem || "未填"}｜分類：${item.classificationResult || "未填"}｜分類理由：${item.classificationReason || "未填"}｜發現：${item.problemFound}｜原因：${item.possibleReason}｜改善：${item.improvementIdea}`;
     }).join("\n");
 
-    return `你是一位國小高年級環境教育與綜合活動課程顧問。以下是學生在《校園綠夥伴：環境復甦任務》中提交的校園觀察資料。請協助整理：
+    return `你是一位國小高年級「淨芽小隊：校園健康冒險」課程顧問。以下是學生在《校園綠夥伴：環境復甦任務／淨芽小隊：校園健康冒險》中提交的校園探索、步數、垃圾辨識、分類與改善想法資料。請協助整理：
 
 1. 最常出現垃圾或環境問題的校園區域
-2. 最常見的垃圾類型
-3. 學生提出的可能原因
-4. 學生提出的改善方法
-5. 哪些改善方法最具體、最可行
-6. 可以提供給學生的回饋與追問
-7. 可以作為全校宣導的重點句子
+2. 學生累積步數與校園探索情形如何
+3. 最常見的垃圾類型有哪些
+4. 學生的分類判斷是否合理，有哪些需要提醒
+5. 學生提出的可能原因有哪些共通點
+6. 學生提出的改善方法中，哪些最具體、最可行
+7. 各小隊的精靈能量或能力值可以給予什麼回饋
+8. 可以提供哪些適合國小學生理解的健康與環境提醒
+9. 可以整理成哪些全校宣導重點
+10. 請生成一段可放入「淨芽小隊守護報告」的成果摘要
 
-請用繁體中文、國小高年級能理解的方式整理。
+請用繁體中文、國小高年級能理解的語氣，並保持鼓勵、具體、可行。
 
 學生資料：
 ${rows || "目前尚無學生回報資料。"}`;
